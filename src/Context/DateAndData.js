@@ -1,25 +1,31 @@
 import React, { createContext, useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { storage } from "./Storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const DateAndDataContext = createContext();
 
 export const DateAndDataProvider = ({ children }) => {
-  const [dateAndData, setDateAndData] = useState([]);
+
+  let fetchedData = [];
+  
+  const load = async () => {
+    try {
+      let data = await AsyncStorage.getItem("dateAndData");
+      if (data !== null) {
+		console.log("The retrevied data: ", data);
+        setDateAndData(JSON.parse(data));
+      }
+    } catch (err) {
+      alert(err);
+    }
+  };
 
   useEffect(() => {
-    storage
-      .load({
-        key: "dateAndData",
-      })
-      .then((res) => {
-		console.log('this is res', res);
-        setDateAndData(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    load();
   }, []);
+
+  const [dateAndData, setDateAndData] = useState(fetchedData);
+
+
 
   const contextValue = { dateAndData, setDateAndData };
   return (

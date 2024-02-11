@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { nanoid } from "nanoid";
+import { customAlphabet } from "nanoid/non-secure";
 
 import {
   View,
@@ -11,25 +11,18 @@ import {
 } from "react-native";
 import { DateAndDataContext } from "../Context/DateAndData";
 import DatePicker from "../components/DatePicker";
+import InputContainer from "../components/InputContainer";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
 
 const HomeScreen = () => {
+
   const { dateAndData, setDateAndData } = useContext(DateAndDataContext);
 
   const [date, setDate] = useState(new Date());
 
-  const [eveBible, setEveBible] = useState("");
-  const [earlyBible, setEarlyBible] = useState("");
-  const [pauline, setPauline] = useState("");
-  const [catholic, setCatholic] = useState("");
-  const [apraxis, setApraxis] = useState("");
-  const [bible, setBible] = useState("");
-  const [deacon1, setDeacon1] = useState("");
-  const [deacon2, setDeacon2] = useState("");
-  const [deacon3, setDeacon3] = useState("");
-  const [deacon4, setDeacon4] = useState("");
-  const [deacon5, setDeacon5] = useState("");
-
-  const [dataObject, setDataObject] = useState({
+  const defaultData = {
     id: nanoid(),
     date: date.toLocaleDateString(),
     eveBible: "",
@@ -43,69 +36,75 @@ const HomeScreen = () => {
     deacon3: "",
     deacon4: "",
     deacon5: "",
-  });
+  };
+
+  const [dataObject, setDataObject] = useState(defaultData);
 
   const resetDate = (date) => {
     setDate(date);
-    setEveBible("");
-    setEarlyBible("");
-    setPauline("");
-    setCatholic("");
-    setApraxis("");
-    setBible("");
-    setDeacon1("");
-    setDeacon2("");
-    setDeacon3("");
-    setDeacon4("");
-    setDeacon5("");
+    setDataObject(defaultData);
   };
 
+  // useEffect(() => {
+  //   getData();
+  // }, [dateAndData]);
+
   useEffect(() => {
-    const findDateAndData = dateAndData.find(
+    const dateIndex = dateAndData.findIndex(
       (item) => item.date === date.toLocaleDateString()
     );
-
-    if (findDateAndData) {
-      setEveBible(findDateAndData.eveBible);
-      setEarlyBible(findDateAndData.earlyBible);
-      setPauline(findDateAndData.pauline);
-      setCatholic(findDateAndData.catholic);
-      setApraxis(findDateAndData.apraxis);
-      setBible(findDateAndData.bible);
+    if (dateIndex !== -1) {
+      setDataObject(dateAndData[dateIndex]);
+    } else {
+      setDataObject(defaultData);
     }
+    const saveData = async () => {
+      try {
+        await AsyncStorage.setItem("dateAndData", JSON.stringify(dateAndData));
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    saveData();
   }, [date]);
 
   useEffect(() => {
-    console.log("Changed", date);
-    console.log(dateAndData);
-
-    setDateAndData((prev) => {
-      const findDateAndData = prev.find(
-        (item) => item.date === date.toLocaleDateString()
-      );
-
-      if (findDateAndData) {
-        findDateAndData.eveBible = eveBible;
-        findDateAndData.earlyBible = earlyBible;
-        findDateAndData.pauline = pauline;
-        findDateAndData.catholic = catholic;
-        findDateAndData.apraxis = apraxis;
-        findDateAndData.bible = bible;
-      } else {
-        prev.push({
-          date: date.toLocaleDateString(),
-          eveBible,
-          earlyBible,
-          pauline,
-          catholic,
-          apraxis,
-          bible,
-        });
+    const dateIndex = dateAndData.findIndex(
+      (item) => item.date === date.toLocaleDateString()
+    );
+    if (dateIndex !== -1) {
+      const newData = [...dateAndData];
+      newData[dateIndex] = dataObject;
+      setDateAndData(newData);
+    } else {
+      setDateAndData([...dateAndData, dataObject]);
+    }
+    const saveData = async () => {
+      try {
+        await AsyncStorage.setItem("dateAndData", JSON.stringify(dateAndData));
+      } catch (err) {
+        console.log(err);
       }
+    };
+    // saveData();
+  }, [dataObject]);
 
-      return prev;
-    });
-  }, [eveBible, earlyBible, pauline, catholic, apraxis, bible, date]);
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem("dateAndData");
+      console.log("Hi:::", value);
+      if (value !== null) {
+        console.log("Hi:", value);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+
+  const handleInputChange = (input, value) => {
+    setDataObject({ ...dataObject, [input]: value }); 
+  };
 
   return (
     <ImageBackground
@@ -120,59 +119,43 @@ const HomeScreen = () => {
 
         <Text style={styles.sectionTitle}>القراءات</Text>
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.inputText}
-            value={eveBible}
-            onChangeText={(name) => setEveBible(name)}
-          />
-          <Text style={styles.inputTitle}>إنجيل عشية</Text>
-        </View>
+        <InputContainer
+          title={"إنجيل عشية"}
+          value=""/*{dataObject.eveBible}*/
+          // handler={handleInputChange}
+          name="eveBible"
+        />
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.inputText}
-            value={earlyBible}
-            onChangeText={(name) => setEarlyBible(name)}
-          />
-          <Text style={styles.inputTitle}>إنجيل باكر</Text>
-        </View>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.inputText}
-            value={pauline}
-            onChangeText={(name) => setPauline(name)}
-          />
-          <Text style={styles.inputTitle}>البولس </Text>
-        </View>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.inputText}
-            value={catholic}
-            onChangeText={(name) => setCatholic(name)}
-          />
-          <Text style={styles.inputTitle}>الكاثوليكون</Text>
-        </View>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.inputText}
-            value={apraxis}
-            onChangeText={(name) => setApraxis(name)}
-          />
-          <Text style={styles.inputTitle}>الأبركسيس</Text>
-        </View>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.inputText}
-            value={bible}
-            onChangeText={(name) => setBible(name)}
-          />
-          <Text style={styles.inputTitle}>الإنجيل</Text>
-        </View>
+        <InputContainer
+          title={"إنجيل باكر"}
+          value=""/*{dataObject.earlyBible}*/
+          // handler={handleInputChange}
+          name="earlyBible"
+        />
+        <InputContainer
+          title={"البولس"}
+          value=""/*{dataObject.pauline}*/
+          // handler={handleInputChange}
+          name="pauline"
+        />
+        <InputContainer
+          title={"الكاثوليكون"}
+          value=""/*{dataObject.catholic}*/
+          // handler={handleInputChange}
+          name="catholic"
+        />
+        <InputContainer
+          title={"الأبركسيس"}
+          value=""/*{dataObject.apraxis}*/
+          // handler={handleInputChange}
+          name="apraxis"
+        />
+        <InputContainer
+          title={"الإنجيل"}
+          value=""/*{dataObject.bible}*/
+          // handler={handleInputChange}
+          name="bible"
+        />
 
         <Text style={styles.sectionTitle}>خدمة المذبح</Text>
 
@@ -180,32 +163,27 @@ const HomeScreen = () => {
           <TextInput
             style={styles.inputText}
             placeholder="شماس 1"
-            value={deacon1}
-            onChangeText={(name) => setDeacon1(name)}
+            value=""/*{dataObject.deacon1}*/
           />
           <TextInput
             style={styles.inputText}
             placeholder="شماس 2"
-            value={deacon2}
-            onChangeText={(name) => setDeacon2(name)}
+            value=""/*{dataObject.deacon2}*/
           />
           <TextInput
             style={styles.inputText}
             placeholder="شماس 3"
-            value={deacon3}
-            onChangeText={(name) => setDeacon3(name)}
+            value=""/*{dataObject.deacon3}*/
           />
           <TextInput
             style={styles.inputText}
             placeholder="شماس 4"
-            value={deacon4}
-            onChangeText={(name) => setDeacon4(name)}
+            value=""/*{dataObject.deacon4}*/
           />
           <TextInput
             style={styles.inputText}
             placeholder="شماس 5"
-            value={deacon5}
-            onChangeText={(name) => setDeacon5(name)}
+            value=""/*{dataObject.deacon5}*/
           />
         </View>
       </ScrollView>
@@ -230,13 +208,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderBottomWidth: 2,
     textAlign: "center",
-  },
-  inputContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginVertical: 10,
   },
   inputTitle: {
     fontSize: 25,

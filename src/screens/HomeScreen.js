@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { customAlphabet } from "nanoid/non-secure";
-
 import {
   View,
   Text,
@@ -8,10 +8,13 @@ import {
   TextInput,
   ScrollView,
   ImageBackground,
+  Dimensions,
 } from "react-native";
+import { DateAndDataProvider } from "../Context/DateAndData";
 import { DateAndDataContext } from "../Context/DateAndData";
 import DatePicker from "../components/DatePicker";
 import InputContainer from "../components/InputContainer";
+
 const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
 
 const HomeScreen = () => {
@@ -42,9 +45,13 @@ const HomeScreen = () => {
     setDataObject(defaultData);
   };
 
-  useEffect(() => {
-    console.log(dateAndData);
-  }, [dateAndData]);
+  const save = async () => {
+    try {
+      await AsyncStorage.setItem("dateAndData", JSON.stringify(dateAndData));
+    } catch (err) {
+      alert(err);
+    }
+  };
 
   useEffect(() => {
     const dateIndex = dateAndData.findIndex(
@@ -55,7 +62,10 @@ const HomeScreen = () => {
     } else {
       setDataObject(defaultData);
     }
-  }, [date]);
+    if (dateAndData.length !== 0) {
+      save();
+    }
+  }, [date, dateAndData]);
 
   useEffect(() => {
     const dateIndex = dateAndData.findIndex(
@@ -68,24 +78,39 @@ const HomeScreen = () => {
     } else {
       setDateAndData([...dateAndData, dataObject]);
     }
+    if (dateAndData.length !== 0) {
+      save();
+    }
+    // Error is here
   }, [dataObject]);
 
+  // useEffect(() => {
+  //   async function getData() {
+  //     try {
+  //       let data = await AsyncStorage.getItem("dateAndData");
+  //       if (data !== null) {
+  //         console.log("7mama", data);
+  //       }
+  //     } catch (err) {
+  //       alert(err);
+  //     }
+  //   }
+  //   getData();
+  // }, [dateAndData]);
+
   const handleInputChange = (input, value) => {
-    console.log('Hi')
     setDataObject({ ...dataObject, [input]: value });
   };
 
   return (
     <ImageBackground
       source={require("../../assets/marc3.jpeg")}
-      resizeMode="cover"
       style={styles.image}
-      blurRadius={4}
-      opacity={0.85}
+      opacity={0.8}
+      blurRadius={3}
     >
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <DatePicker date={date} setDate={resetDate} />
-
         <Text style={styles.sectionTitle}>القراءات</Text>
 
         <InputContainer
@@ -129,30 +154,35 @@ const HomeScreen = () => {
         <Text style={styles.sectionTitle}>خدمة المذبح</Text>
 
         <View style={styles.sectionTwo}>
-          <TextInput
-            style={styles.inputText}
-            placeholder="شماس 1"
+          <InputContainer
+            title={"شماس 1"}
             value={dataObject.deacon1}
+            handler={handleInputChange}
+            name="deacon1"
           />
-          <TextInput
-            style={styles.inputText}
-            placeholder="شماس 2"
+          <InputContainer
+            title={"شماس 2"}
             value={dataObject.deacon2}
+            handler={handleInputChange}
+            name="deacon2"
           />
-          <TextInput
-            style={styles.inputText}
-            placeholder="شماس 3"
+          <InputContainer
+            title={"شماس 3"}
             value={dataObject.deacon3}
+            handler={handleInputChange}
+            name="deacon3"
           />
-          <TextInput
-            style={styles.inputText}
-            placeholder="شماس 4"
+          <InputContainer
+            title={"شماس 4"}
             value={dataObject.deacon4}
+            handler={handleInputChange}
+            name="deacon4"
           />
-          <TextInput
-            style={styles.inputText}
-            placeholder="شماس 5"
+          <InputContainer
+            title={"شماس 5"}
             value={dataObject.deacon5}
+            handler={handleInputChange}
+            name="deacon5"
           />
         </View>
       </ScrollView>
@@ -162,24 +192,24 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 10,
     marginHorizontal: 20,
+    height: Dimensions.get("window").height,
   },
   image: {
-    flex: 1,
-    justifyContent: "center",
     opacity: 0.8,
+    flex: 1,
+    maxHeight: Dimensions.get("window").height,
   },
   sectionTitle: {
     fontSize: 25,
     fontWeight: "bold",
     color: "black",
-    marginBottom: 10,
+    marginBottom: 5,
     borderBottomWidth: 2,
     textAlign: "center",
   },
   inputTitle: {
-    fontSize: 25,
+    fontSize: 15,
     color: "black",
     fontWeight: "bold",
   },
@@ -200,7 +230,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    alignItems: "center",
     marginVertical: 10,
   },
 });

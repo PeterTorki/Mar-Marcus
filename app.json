@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Mar-Marcus",
+    "name": "Mar Markos",
     "slug": "Mar-Marcus",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/playstore.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/MarMarcosSplashN.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,12 +19,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/MarcoIcon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.peter_torki.MarMarcus"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "318cd004-9118-4994-bfaa-1726e694ce02"
+      }
     }
   }
 }
